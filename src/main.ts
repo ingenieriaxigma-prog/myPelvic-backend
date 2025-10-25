@@ -1,32 +1,47 @@
-// 🚀 main.ts
-// Este es el punto de entrada principal del backend.
-// - Carga las variables de entorno (.env)
-// - Crea la aplicación NestJS usando AppModule
-// - Habilita CORS (permite conexión desde el frontend)
-// - Escucha peticiones HTTP en el puerto definido
-// Es el archivo que realmente "enciende" todo el servidor.
-
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
+import rateLimit from 'express-rate-limit';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors({ origin: '*' });
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
+  // ✅ Seguridad básica
+  app.enableCors();
+  app.use(
+    rateLimit({
+      windowMs: 60 * 1000, // 1 minuto
+      max: 100, // máximo 100 peticiones por IP
+    }),
+  );
 
+  // ✅ Validación global de DTOs
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+
+  // ✅ Configuración de Swagger (ahora con Bearer Token funcionando)
   const config = new DocumentBuilder()
     .setTitle('MyPelvic API')
-    .setDescription('Backend MyPelvic (NestJS + Supabase)')
-    .setVersion('1.0.0')
+    .setDescription('Documentación interactiva de la API MyPelvic')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        description: 'Introduce tu token JWT obtenido desde /auth/login',
+        in: 'header',
+      },
+      'access-token', // 👈 nombre del esquema
+    )
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`🚀 MyPelvic API: http://localhost:${port} | Docs: /docs`);
+  // 🚀 Iniciar servidor
+  await app.listen(process.env.PORT || 3000);
+  console.log(`🚀 MyPelvic API corriendo en http://localhost:${process.env.PORT || 3000}/docs`);
 }
 bootstrap();
