@@ -16,30 +16,28 @@ Incluye autenticación real con validación por correo electrónico y documentac
 
 ## 🧠 Arquitectura del Backend — MyPelvic
 
-## 🧠 Arquitectura del Backend — MyPelvic
-
 ```mermaid
 flowchart TD
-    A[🧍 Usuario / App / Swagger] -->|"POST /auth/signup"--> B[🎯 AuthController]
-    A -->|"POST /auth/login"--> B
-    B -->|"Valida datos con DTOs (email, password)"--> C[⚙️ AuthService]
-    C -->|"Usa cliente Supabase"--> D[🔌 SupabaseClientProvider]
-    D -->|"Conecta con claves .env"--> E[☁️ Supabase Cloud]
-    E -->|"Guarda usuarios y gestiona autenticación"--> F[💾 Base de Datos PostgreSQL]
-    F -->|"Devuelve resultado JSON"--> G[📬 Respuesta HTTP]
+    A[Usuario / App / Swagger] -->|"POST /auth/signup"| B[AuthController]
+    A -->|"POST /auth/login"| B
+    B -->|"Valida datos con DTOs (email, password)"| C[AuthService]
+    C -->|"Usa cliente Supabase"| D[SupabaseClientProvider]
+    D -->|"Conecta con claves .env"| E[Supabase Cloud]
+    E -->|"Guarda usuarios y gestiona autenticación"| F[Base de Datos PostgreSQL]
+    F -->|"Devuelve resultado JSON"| G[Respuesta HTTP]
     
     %% Estructura de módulos
-    subgraph NestJS_App [🏗️ NestJS Application]
+    subgraph NestJS_App [NestJS Application]
         direction TB
-        H[🧩 main.ts - Punto de arranque] --> I[🏠 AppModule - Módulo raíz]
-        I --> J[🔐 AuthModule - Módulo de autenticación]
+        H[main.ts - Punto de arranque] --> I[AppModule - Módulo raíz]
+        I --> J[AuthModule - Módulo de autenticación]
         J --> B
         J --> C
         J --> D
     end
 
     %% Relaciones externas
-    subgraph Supabase [☁️ Supabase Cloud]
+    subgraph Supabase [Supabase Cloud]
         direction TB
         E
         F
