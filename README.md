@@ -46,3 +46,47 @@ flowchart TD
     %% Estilos
     style NestJS_App fill:#E7F1FF,stroke:#6FA8DC,stroke-width:2px
     style Supabase fill:#FFF7E6,stroke:#F4A261,stroke-width:2px
+
+---
+
+## 👥 MÓDULO DE USUARIOS (`UserModule`)
+
+### 📘 Descripción general
+El módulo de usuarios permite la gestión completa de perfiles dentro del ecosistema **MyPelvic API**, enlazando los registros de **Supabase Auth** con la tabla `public.users`.  
+Cada usuario que se registra o inicia sesión se sincroniza automáticamente mediante un **trigger SQL**, garantizando consistencia entre ambas fuentes.
+
+### ⚙️ Estructura de carpetas
+src/
+└── modules/
+└── user/
+├── dto/
+│ ├── update-user.dto.ts
+│ └── user-response.dto.ts
+├── entities/
+│ └── user.entity.ts
+├── user.controller.ts
+├── user.service.ts
+└── user.module.ts
+
+
+---
+
+### 🧩 Funcionalidades principales
+
+| Método | Endpoint       | Descripción |
+|--------|----------------|-------------|
+| `GET`  | `/users/me`    | Retorna el perfil del usuario autenticado. |
+| `PATCH`| `/users/me`    | Permite actualizar datos básicos como nombre, teléfono o avatar. |
+| `DELETE`| `/users/me`   | Elimina la cuenta del usuario autenticado. |
+| `GET`  | `/users`       | Lista todos los usuarios (solo disponible para roles `admin`). |
+
+---
+
+### 🔒 Autenticación
+
+Todas las rutas están protegidas mediante el **SupabaseAuthGuard**, que valida el token JWT recibido desde Supabase.
+
+Ejemplo de header en Postman o Swagger:
+
+```bash
+Authorization: Bearer <tu_access_token>
