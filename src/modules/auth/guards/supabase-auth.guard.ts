@@ -1,61 +1,56 @@
 import {
+  Injectable,
   CanActivate,
   ExecutionContext,
-  Injectable,
   UnauthorizedException,
-  ForbiddenException,
 } from '@nestjs/common';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 @Injectable()
 export class SupabaseAuthGuard implements CanActivate {
-  private supabase: SupabaseClient;
-
-  constructor() {
-    this.supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_ANON_KEY!
-    );
-  }
+  private supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!
+  );
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-
     const authHeader = request.headers['authorization'];
-    if (!authHeader) throw new UnauthorizedException('Falta el header Authorization');
 
-    const token = authHeader.split(' ')[1];
-    if (!token) throw new UnauthorizedException('Token no proporcionado');
-
-    // 🔹 Verificar sesión con Supabase
-    const {
-      data: { user },
-      error,
-    } = await this.supabase.auth.getUser(token);
-
-    if (error || !user) {
-      throw new UnauthorizedException('Token inválido o expirado');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new UnauthorizedException('Missing or invalid Authorization header');
     }
 
-    // 🔹 Buscar en tabla users su información adicional (rol, datos perfil)
-    const { data: userInfo } = await this.supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single();
+    const token = authHeader.replace('Bearer ', '').trim();
 
-    // 🔹 Adjuntar usuario completo al request
+    const { data, error } = await this.supabase.auth.getUser(token);
+
+    if (error || !data.user) {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
+
+    // 📌 Aquí asignamos el usuario real al request
     request.user = {
-      id: user.id,
-      email: user.email,
-      role: userInfo?.role ?? 'user', // por defecto "user"
-      full_name: userInfo?.full_name,
-      phone: userInfo?.phone,
+      id: data.user.id,
+      email: data.user.email,
+      role: await this.getUserRole(data.user.id),
     };
 
     return true;
+  }
+
+  // Función auxiliar: obtener el rol desde la tabla users
+  private async getUserRole(userId: string): Promise<string> {
+    const { data, error } = await this.supabase
+      .from('users')
+      .select('role')
+      .eq('id', userId)
+      .single();
+
+    if (error || !data) return 'user'; // rol por defecto
+    return data.role;
   }
 }
