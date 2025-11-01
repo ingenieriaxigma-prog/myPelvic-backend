@@ -1,11 +1,11 @@
-# 🧠 MyPelvic Backend (NestJS + Supabase + Docker)
+# MyPelvic Backend (NestJS + Supabase + Docker)
 
 Este backend fue desarrollado con **NestJS**, **Supabase** y **Docker**, siguiendo principios de arquitectura modular y escalabilidad.  
 Incluye autenticación real con validación por correo electrónico y documentación automática con **Swagger**.
 
 ---
 
-## 🧱 Tecnologías principales
+## Tecnologías principales
 
 - **NestJS** → Framework modular para Node.js  
 - **Supabase** → Base de datos PostgreSQL + autenticación  
@@ -15,38 +15,32 @@ Incluye autenticación real con validación por correo electrónico y documentac
 
 ---
 
-## 🧠 Arquitectura del Backend — MyPelvic
+## Arquitectura del Backend — MyPelvic
 
 ```mermaid
 flowchart TD
-A[🧍‍♂️ Usuario / App / Swagger] -->|POST /auth/signup<br/>POST /auth/login| B[🎯 AuthController]
-B -->|Valida datos con DTOs<br/>(email, password)| C[⚙️ AuthService]
-C -->|Usa cliente Supabase| D[🔌 SupabaseClientProvider]
-D -->|Conecta con claves .env| E[☁️ Supabase Cloud]
-E -->|Guarda usuarios<br/>y gestiona autenticación| F[💾 Base de Datos PostgreSQL]
-F -->|Devuelve resultado JSON| G[📬 Respuesta HTTP]
+A[Usuario / App / Swagger] -->|POST /auth/signup, POST /auth/login| B[AuthController]
+B -->|Valida datos con DTOs (email, password)| C[AuthService]
+C -->|Usa cliente Supabase| D[SupabaseClientProvider]
+D -->|Conecta con claves .env| E[Supabase Cloud]
+E -->|Guarda usuarios y gestiona autenticación| F[Base de Datos PostgreSQL]
+F -->|Devuelve resultado JSON| G[Respuesta HTTP]
 
-subgraph NestJS_App [🏗️ NestJS Application]
+subgraph NestJS_App [NestJS Application]
 direction TB
-H[🧩 main.ts - Punto de arranque] --> I[🏠 AppModule - Módulo raíz]
-I --> J[🔐 AuthModule - Módulo de autenticación]
+H[main.ts - Punto de arranque] --> I[AppModule - Módulo raíz]
+I --> J[AuthModule - Módulo de autenticación]
 J --> B
 J --> C
 J --> D
 end
 
-subgraph Supabase [☁️ Supabase Cloud]
+subgraph Supabase [Supabase Cloud]
 direction TB
 E
 F
 end
-
-style NestJS_App fill:#E7F1FF,stroke:#6FA8DC,stroke-width:2px
-style Supabase fill:#FFF7E6,stroke:#F4A261,stroke-width:2px
 ```
-
----
-
 ## 🔐 Módulo de Autenticación (AuthModule)
 
 Gestiona el **registro**, **login** y **verificación de sesión** usando Supabase Auth.  
