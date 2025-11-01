@@ -15,6 +15,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
+import { CreateReactionDto } from './dto/create-reaction.dto';
 
 @ApiTags('feed')
 @ApiBearerAuth()
@@ -68,4 +69,25 @@ export class FeedController {
   async getComments(@Param('postId') postId: string) {
     return this.feedService.findComments(postId);
   }
+  /** 💖 Reaccionar a una publicación */
+  @Post('reactions')
+  @ApiResponse({ status: 201, description: 'Reacción agregada o eliminada (toggle)' })
+  async reactToPost(@Request() req, @Body() dto: CreateReactionDto) {
+    return this.feedService.reactToPost(req.user.id, dto);
+  }
+
+  /** ❤️ Listar reacciones de un post */
+  @Get('reactions/:postId')
+  @ApiResponse({ status: 200, description: 'Lista de reacciones por publicación' })
+  async getReactions(@Param('postId') postId: string) {
+    return this.feedService.getReactions(postId);
+  }
+
+  /** 🔢 Contar likes de una publicación */
+  @Get('reactions/count/:postId')
+  @ApiResponse({ status: 200, description: 'Cantidad de likes de una publicación' })
+  async getReactionCount(@Param('postId') postId: string) {
+    return this.feedService.getReactionCount(postId);
+  }
+
 }

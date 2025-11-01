@@ -15,6 +15,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';  // 👈 NUEVO módulo agregado
 import { FeedModule } from './modules/feed/feed.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 @Module({
   imports: [
     // 🌍 Permite usar variables de entorno (.env) en toda la app
@@ -35,6 +36,8 @@ import { FeedModule } from './modules/feed/feed.module';
     UserModule,
     // 👥 Módulo de feed (ppublicaciones, comentarios, etc)
     FeedModule,
+    // 👥 Módulo de notificaciones
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

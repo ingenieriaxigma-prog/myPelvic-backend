@@ -4,6 +4,8 @@ import * as dotenv from 'dotenv';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { CreateReactionDto } from './dto/create-reaction.dto';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 dotenv.config();
 
@@ -126,5 +128,62 @@ async findAll(userId?: string) {
 
     return merged;
     }
+
+  /** 💖 Reaccionar a una publicación (like / love / etc.) */
+  async reactToPost(userId: string, dto: CreateReactionDto) {
+    // Verificar si ya existe reacción igual
+    const { data: existing, error: findErr } = await this.supabase
+      .from('reactions')
+      .select('id')
+      .eq('post_id', dto.post_id)
+      .eq('user_id', userId)
+      .eq('reaction_type', dto.reaction_type)
+      .maybeSingle();
+
+    if (findErr) throw new Error(findErr.message);
+
+    if (existing) {
+      // Si ya existe, eliminar (toggle like)
+      const { error: delErr } = await this.supabase
+        .from('reactions')
+        .delete()
+        .eq('id', existing.id);
+      if (delErr) throw new Error(delErr.message);
+      return { message: 'Reaction removed successfully' };
+    }
+
+    // Si no existe, crear
+    const { data, error } = await this.supabase
+      .from('reactions')
+      .insert({ user_id: userId, ...dto })
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return { message: 'Reaction added successfully', data };
+  }
+
+  /** ❤️ Obtener todas las reacciones de un post */
+  async getReactions(postId: string) {
+    const { data, error } = await this.supabase
+      .from('reactions')
+      .select('user_id, reaction_type, created_at')
+      .eq('post_id', postId);
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  /** 🔢 Contar total de likes por post */
+  async getReactionCount(postId: string) {
+    const { count, error } = await this.supabase
+      .from('reactions')
+      .select('*', { count: 'exact', head: true })
+      .eq('post_id', postId)
+      .eq('reaction_type', 'like');
+
+    if (error) throw new Error(error.message);
+    return { post_id: postId, likes: count ?? 0 };
+  }
 
 }
