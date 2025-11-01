@@ -19,17 +19,17 @@ Incluye autenticación real con validación por correo electrónico y documentac
 
 ```mermaid
 flowchart TD
-A[Usuario / App / Swagger] -->|POST /auth/signup, POST /auth/login| B[AuthController]
-B -->|Valida datos con DTOs (email, password)| C[AuthService]
+A[Usuario / App / Swagger] -->|POST /auth/signup y /auth/login| B[AuthController]
+B -->|Valida datos con DTOs email y password| C[AuthService]
 C -->|Usa cliente Supabase| D[SupabaseClientProvider]
-D -->|Conecta con claves .env| E[Supabase Cloud]
-E -->|Guarda usuarios y gestiona autenticación| F[Base de Datos PostgreSQL]
+D -->|Conecta con variables .env| E[Supabase Cloud]
+E -->|Guarda usuarios y gestiona autenticacion| F[Base de Datos PostgreSQL]
 F -->|Devuelve resultado JSON| G[Respuesta HTTP]
 
 subgraph NestJS_App [NestJS Application]
 direction TB
-H[main.ts - Punto de arranque] --> I[AppModule - Módulo raíz]
-I --> J[AuthModule - Módulo de autenticación]
+H[main.ts - Punto de arranque] --> I[AppModule - Modulo raiz]
+I --> J[AuthModule - Modulo de autenticacion]
 J --> B
 J --> C
 J --> D
